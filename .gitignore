@@ -62,3 +62,8 @@ typings/
 
 # developer tool
 .idea/
+
+# build
+build
+dist
+.rpt2_cache
