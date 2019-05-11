@@ -1,34 +1,34 @@
-import commonjs from "rollup-plugin-commonjs";
-import resolve from "rollup-plugin-node-resolve";
-import sourceMaps from "rollup-plugin-sourcemaps";
+import commonjs from 'rollup-plugin-commonjs';
+import resolve from 'rollup-plugin-node-resolve';
+import sourceMaps from 'rollup-plugin-sourcemaps';
 
-import svgr from "@svgr/rollup";
-import json from "rollup-plugin-json";
-import external from "rollup-plugin-peer-deps-external";
-import postcss from "rollup-plugin-postcss";
-import typescript from "rollup-plugin-typescript2";
-import url from "rollup-plugin-url";
+import svgr from '@svgr/rollup';
+import json from 'rollup-plugin-json';
+import external from 'rollup-plugin-peer-deps-external';
+import postcss from 'rollup-plugin-postcss';
+import typescript from 'rollup-plugin-typescript2';
+import url from 'rollup-plugin-url';
 
 // tslint:disable-next-line: no-var-requires
-const pkg = require("./package.json");
+const pkg = require('./package.json');
 
 export default {
   input: `src/index.ts`,
   output: [
-    { file: pkg.main, name: "named", format: "umd", sourcemap: true },
-    { file: pkg.module, name: "named", format: "es", sourcemap: true }
+    { file: pkg.main, name: 'named', format: 'umd', sourcemap: true },
+    { file: pkg.module, name: 'named', format: 'es', sourcemap: true }
   ],
   // tslint:disable-next-line: object-literal-sort-keys
   external: [],
   watch: {
-    include: "src/**"
+    include: 'src/**'
   },
   plugins: [
     external(),
     postcss({
       modules: false
     }),
-    url({ exclude: ["**/*.svg"] }),
+    url({ exclude: ['**/*.svg'] }),
     svgr(),
     resolve(),
     // Allow json resolution
