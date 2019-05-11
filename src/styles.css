@@ -1,0 +1,22 @@
+.rus {
+  --theme-color: hsl(262, 25%, 76%);
+  --theme-background: hsl(262, 25%, 95%);
+
+  position: relative;
+  padding: 10px;
+  background-color: var(--theme-background);
+  border: 2px dashed var(--theme-color);
+  border-radius: 8px;
+  cursor: pointer;
+}
+
+.rus_input {
+  position: absolute;
+  top: 0;
+  right: 0;
+  bottom: 0;
+  left: 0;
+  width: 100%;
+  visibility: hidden;
+  opacity: 0;
+}

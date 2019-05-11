@@ -1,3 +1,2 @@
-import ReactUploaderSkeleton from "./ReactUploaderSkeleton";
-
-export default ReactUploaderSkeleton;
+import "./styles.css";
+export { default as ReactUploaderSkeleton } from "./ReactUploaderSkeleton";
