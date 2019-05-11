@@ -1,19 +1,21 @@
 import React, { createRef, RefObject } from "react";
+import DefaultFilePreview from "./DefaultFilePreview";
 import * as FileState from "./FileState";
 
-interface IReactUploaderSkeletonProps {
+export interface IReactUploaderSkeletonProps {
   anyText?: string;
   onClick?: () => void;
 }
 
-interface IUploaderFileData {
+export interface IUploaderFileData {
   id: number | string;
   state: string;
   url?: string;
   fileData?: File;
+  progress?: number;
 }
 
-interface IReactUploaderSkeletonState {
+export interface IReactUploaderSkeletonState {
   currentFiles: IUploaderFileData[];
 }
 
@@ -70,19 +72,14 @@ class ReactUploaderSkeleton extends React.Component<
   public render() {
     const { currentFiles } = this.state;
     return (
-      <div onClick={this.onUploaderClick} className="rus">
-        {this.props.anyText}
-
-        {currentFiles.map(file => (
-          <div key={file.id}>
-            {file.fileData && file.fileData.name}
-
-            <img alt={file.fileData && file.fileData.name} src={file.url} />
-          </div>
-        ))}
-
+      <div className="rus" onClick={this.onUploaderClick}>
+        <div className="rus-preview-container">
+          {currentFiles.map(file => (
+            <DefaultFilePreview key={file.id} uploaderFileData={file} />
+          ))}
+        </div>
         <input
-          className="rus_input"
+          className="rus-input"
           ref={this.fileInputRef}
           onChange={this.onFileChange}
           type="file"
