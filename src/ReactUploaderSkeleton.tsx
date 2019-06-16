@@ -1,6 +1,8 @@
 import React, { createRef, RefObject } from "react";
+import DefaultEmptyPreview from "./DefaultEmptyPreview";
 import DefaultFilePreview from "./DefaultFilePreview";
 import * as FileState from "./FileState";
+import generatorFileName from "./utils/generatorFileName";
 
 export interface IReactUploaderSkeletonProps {
   anyText?: string;
@@ -8,11 +10,12 @@ export interface IReactUploaderSkeletonProps {
 }
 
 export interface IUploaderFileData {
-  id: number | string;
+  name: string;
   state: string;
   url?: string;
   fileData?: File;
   progress?: number;
+  children?: React.ReactNode;
 }
 
 export interface IReactUploaderSkeletonState {
@@ -46,38 +49,75 @@ class ReactUploaderSkeleton extends React.Component<
   public onFileChange = (event: React.ChangeEvent<HTMLInputElement>) => {
     const { files } = event.target;
     if (files) {
-      for (const fileIndex in files) {
-        const currentFile = files[fileIndex];
-        if (currentFile && /image\/.+/.test(currentFile.type)) {
-          const fileReader = new FileReader();
-          fileReader.addEventListener("load", () => {
-            this.setState(({ currentFiles }) => ({
-              currentFiles: [
-                ...currentFiles,
-                {
-                  url: fileReader.result as string,
-                  id: currentFile.name,
-                  state: FileState.WAITING,
-                  fileData: currentFile
-                }
-              ]
-            }));
-          });
-          fileReader.readAsDataURL(files[fileIndex]);
-        }
+      for (const currentFile of files) {
+        this.setState(({ currentFiles }) => ({
+          currentFiles: [
+            ...currentFiles,
+            {
+              name: generatorFileName(currentFiles, currentFile.name),
+              state: FileState.WAITING,
+              fileData: currentFile
+            }
+          ]
+        }));
+        // if (currentFile && /image\/.+/.test(currentFile.type)) {
+        //   const fileReader = new FileReader();
+        //   fileReader.addEventListener("load", () => {
+        //     this.setState(({ currentFiles }) => ({
+        //       currentFiles: [
+        //         ...currentFiles,
+        //         {
+        //           url: fileReader.result as string,
+        //           name: generatorFileName(currentFiles, currentFile.name),
+        //           state: FileState.WAITING,
+        //           fileData: currentFile
+        //         }
+        //       ]
+        //     }));
+        //   });
+        //   fileReader.readAsDataURL(currentFile);
+        // }
       }
     }
   };
 
   public render() {
     const { currentFiles } = this.state;
+    const { children } = this.props;
+    let sumPercent = 0;
+    for (const eachFile of currentFiles) {
+      sumPercent += eachFile.progress || 0;
+    }
+    sumPercent /= currentFiles.length;
+
+    const isEmpty = currentFiles.length === 0;
     return (
       <div className="rus" onClick={this.onUploaderClick}>
-        <div className="rus-preview-container">
-          {currentFiles.map(file => (
-            <DefaultFilePreview key={file.id} uploaderFileData={file} />
-          ))}
-        </div>
+        {isEmpty ? (
+          children || <DefaultEmptyPreview />
+        ) : (
+          <>
+            <div className="rus-preview-sum">
+              <div
+                className="rus-preview-sum_progress"
+                style={{ transform: `scaleX(${sumPercent || 0.2})` }}
+              />
+              <div className="rus-preview-info">
+                <div>Uploading {currentFiles.length} files</div>
+                <div>{sumPercent * 100 || 10}%</div>
+              </div>
+            </div>
+            <div className="rus-preview-container">
+              {currentFiles.map(eachFile => (
+                <DefaultFilePreview
+                  key={eachFile.name}
+                  uploaderFileData={eachFile}
+                />
+              ))}
+            </div>
+          </>
+        )}
+
         <input
           className="rus-input"
           ref={this.fileInputRef}

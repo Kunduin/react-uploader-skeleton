@@ -6,7 +6,7 @@ import React from "react";
 import { ReactUploaderSkeleton } from "../src";
 
 const CenterDecorator: StoryDecorator = storyFn => (
-  <div style={{ margin: "40px auto", maxWidth: 800 }}>{storyFn()}</div>
+  <div style={{ margin: "40px auto", maxWidth: 400 }}>{storyFn()}</div>
 );
 
 storiesOf("Hello World", module)
