@@ -5,8 +5,14 @@ import * as FileState from "./FileState";
 import generatorFileName from "./utils/generatorFileName";
 
 export interface IReactUploaderSkeletonProps {
-  anyText?: string;
-  onClick?: () => void;
+  parallelUploads: number;
+  request: (
+    uploaderFileData: IUploaderFileData,
+    onProgress: (percent: number) => void,
+    onError: (message?: string) => void,
+    onSuccess: (url?: string) => void
+  ) => void;
+  children?: React.ReactNode;
 }
 
 export interface IUploaderFileData {
@@ -15,7 +21,6 @@ export interface IUploaderFileData {
   url?: string;
   fileData?: File;
   progress?: number;
-  children?: React.ReactNode;
 }
 
 export interface IReactUploaderSkeletonState {
@@ -26,7 +31,9 @@ class ReactUploaderSkeleton extends React.Component<
   IReactUploaderSkeletonProps,
   IReactUploaderSkeletonState
 > {
-  public static defaultProps = {};
+  public static defaultProps = {
+    parallelUploads: 5
+  };
 
   public readonly state: IReactUploaderSkeletonState = {
     currentFiles: []
@@ -49,35 +56,19 @@ class ReactUploaderSkeleton extends React.Component<
   public onFileChange = (event: React.ChangeEvent<HTMLInputElement>) => {
     const { files } = event.target;
     if (files) {
+      const changeFiles = [];
+      const { currentFiles } = this.state;
       for (const currentFile of files) {
-        this.setState(({ currentFiles }) => ({
-          currentFiles: [
-            ...currentFiles,
-            {
-              name: generatorFileName(currentFiles, currentFile.name),
-              state: FileState.WAITING,
-              fileData: currentFile
-            }
-          ]
-        }));
-        // if (currentFile && /image\/.+/.test(currentFile.type)) {
-        //   const fileReader = new FileReader();
-        //   fileReader.addEventListener("load", () => {
-        //     this.setState(({ currentFiles }) => ({
-        //       currentFiles: [
-        //         ...currentFiles,
-        //         {
-        //           url: fileReader.result as string,
-        //           name: generatorFileName(currentFiles, currentFile.name),
-        //           state: FileState.WAITING,
-        //           fileData: currentFile
-        //         }
-        //       ]
-        //     }));
-        //   });
-        //   fileReader.readAsDataURL(currentFile);
-        // }
+        changeFiles.push({
+          name: generatorFileName(currentFiles, currentFile.name),
+          state: FileState.WAITING,
+          fileData: currentFile
+        });
       }
+      const nextCurrentFiles = [...currentFiles, ...changeFiles];
+
+      this.setState({ currentFiles: nextCurrentFiles });
+      this.arrangeFileUpload();
     }
   };
 
@@ -88,7 +79,10 @@ class ReactUploaderSkeleton extends React.Component<
     for (const eachFile of currentFiles) {
       sumPercent += eachFile.progress || 0;
     }
-    sumPercent /= currentFiles.length;
+    sumPercent = currentFiles.length / sumPercent;
+    if (sumPercent > 1) {
+      sumPercent = 1;
+    }
 
     const isEmpty = currentFiles.length === 0;
     return (
@@ -100,11 +94,11 @@ class ReactUploaderSkeleton extends React.Component<
             <div className="rus-preview-sum">
               <div
                 className="rus-preview-sum_progress"
-                style={{ transform: `scaleX(${sumPercent || 0.2})` }}
+                style={{ transform: `scaleX(${sumPercent})` }}
               />
               <div className="rus-preview-info">
                 <div>Uploading {currentFiles.length} files</div>
-                <div>{sumPercent * 100 || 10}%</div>
+                <div>{Math.floor(sumPercent * 100)}%</div>
               </div>
             </div>
             <div className="rus-preview-container">
@@ -112,6 +106,16 @@ class ReactUploaderSkeleton extends React.Component<
                 <DefaultFilePreview
                   key={eachFile.name}
                   uploaderFileData={eachFile}
+                  onRemove={() => {
+                    this.setState(preState => {
+                      const nextFiles = [...preState.currentFiles];
+                      const targetIndex = nextFiles.findIndex(
+                        value => value.name === eachFile.name
+                      );
+                      nextFiles.splice(targetIndex, 1);
+                      return { currentFiles: nextFiles };
+                    });
+                  }}
                 />
               ))}
             </div>
@@ -128,6 +132,65 @@ class ReactUploaderSkeleton extends React.Component<
       </div>
     );
   }
+
+  private arrangeFileUpload = () => {
+    this.setState(({ currentFiles }) => {
+      const { parallelUploads, request } = this.props;
+      const currentUploadingFiles =
+        currentFiles.filter(each => each.state === FileState.UPLOADING) || [];
+      const toBeUpload = parallelUploads - currentUploadingFiles.length;
+
+      if (toBeUpload > 0) {
+        for (const eachFile of currentFiles) {
+          if (toBeUpload > 0 && eachFile.state === FileState.WAITING) {
+            const updateThisFile = (
+              nextFile: IUploaderFileData,
+              hasCallBack?: boolean
+            ) => {
+              this.setState(
+                preState => {
+                  const nextFiles = [...preState.currentFiles];
+                  const fileIndex = nextFiles.findIndex(
+                    eachNextFile => eachNextFile.name === eachFile.name
+                  );
+                  if (fileIndex >= 0) {
+                    nextFiles[fileIndex] = nextFile;
+                    return { currentFiles: nextFiles };
+                  }
+                  return { currentFiles: preState.currentFiles };
+                },
+                hasCallBack ? this.arrangeFileUpload : () => null
+              );
+            };
+
+            request(
+              eachFile,
+              progress => {
+                updateThisFile({ ...eachFile, progress });
+              },
+              () => {
+                updateThisFile({ ...eachFile, state: FileState.ERROR }, true);
+              },
+              successUrl => {
+                updateThisFile(
+                  {
+                    ...eachFile,
+                    state: FileState.RESOLVED,
+                    url: successUrl,
+                    progress: 1
+                  },
+                  true
+                );
+              }
+            );
+
+            eachFile.state = FileState.UPLOADING;
+          }
+        }
+      }
+      return { currentFiles: [...currentFiles] };
+    });
+  };
 }
 
 export default ReactUploaderSkeleton;

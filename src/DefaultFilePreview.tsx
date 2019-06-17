@@ -4,10 +4,15 @@ import * as FileState from "./FileState";
 
 interface IDefaultFilePreviewProps {
   uploaderFileData: IUploaderFileData;
+  onRemove: () => void;
 }
 
 const CheckMark = () => (
-  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24">
+  <svg
+    className="rus-preview_tag"
+    xmlns="http://www.w3.org/2000/svg"
+    viewBox="0 0 24 24"
+  >
     <g>
       <g>
         <rect width="24" height="24" opacity="0" />
@@ -38,7 +43,11 @@ const CloseCircle = () => (
 );
 
 const Close = () => (
-  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24">
+  <svg
+    className="rus-preview_tag--error"
+    xmlns="http://www.w3.org/2000/svg"
+    viewBox="0 0 24 24"
+  >
     <g>
       <g>
         <rect
@@ -61,29 +70,47 @@ class DefaultFilePreview extends React.Component<IDefaultFilePreviewProps> {
   };
 
   public render() {
-    const { uploaderFileData } = this.props;
+    const { uploaderFileData, onRemove } = this.props;
     const { progress = 0, name, state } = uploaderFileData;
 
     return (
       <div onClick={this.onPreviewClick} className="rus-preview">
         <div className="rus-preview_left">
           <div className="rus-preview_name">
-            <strong>{progress || 0.2 * 100}%</strong>
-            {` · ${name}`}
+            <strong style={{ marginRight: 4 }}>
+              {Math.floor(progress * 100)}%{" · "}
+            </strong>
+            {uploaderFileData.url ? (
+              <a
+                target="_blank"
+                href={uploaderFileData.url}
+                className="rus-preview_file-name "
+              >
+                {name}
+              </a>
+            ) : (
+              <span className="rus-preview_file-name ">{name}</span>
+            )}
+
+            {uploaderFileData.state === FileState.RESOLVED && <CheckMark />}
+            {uploaderFileData.state === FileState.ERROR && <Close />}
           </div>
 
-          <div className="rus-preview_progress-bar-container">
-            <div
-              style={{ transform: `scaleX(${progress || 0.2})` }}
-              className={
-                state === FileState.ERROR
-                  ? "rus-preview_progress-bar--error"
-                  : "rus-preview_progress-bar"
-              }
-            />
-          </div>
+          {uploaderFileData.state !== FileState.RESOLVED &&
+            uploaderFileData.state !== FileState.ERROR && (
+              <div className="rus-preview_progress-bar-container">
+                <div
+                  style={{ transform: `scaleX(${progress})` }}
+                  className={
+                    state === FileState.ERROR
+                      ? "rus-preview_progress-bar--error"
+                      : "rus-preview_progress-bar"
+                  }
+                />
+              </div>
+            )}
         </div>
-        <div className="rus-preview_delete">
+        <div className="rus-preview_delete" onClick={onRemove}>
           <CloseCircle />
         </div>
       </div>
