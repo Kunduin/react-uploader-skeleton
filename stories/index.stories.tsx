@@ -25,9 +25,13 @@ storiesOf("Hello World", module)
             onProgress(done / total);
           }
         });
-        xhr.addEventListener("readystatechange", e => {
+        xhr.addEventListener("readystatechange", () => {
           if (xhr.readyState === 4) {
-            onSuccess(xhr.response);
+            if (xhr.status === 200) {
+              onSuccess(xhr.response);
+            } else {
+              onError();
+            }
           }
         });
 
