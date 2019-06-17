@@ -53,8 +53,21 @@ class ReactUploaderSkeleton extends React.Component<
     }
   };
 
-  public onFileChange = (event: React.ChangeEvent<HTMLInputElement>) => {
+  public onUploaderDrop = (event: React.DragEvent<HTMLDivElement>) => {
+    event.preventDefault();
+
+    const { dataTransfer } = event.nativeEvent;
+    if (dataTransfer) {
+      this.onFileChange(dataTransfer.files);
+    }
+  };
+
+  public onInputChange = (event: React.ChangeEvent<HTMLInputElement>) => {
     const { files } = event.target;
+    this.onFileChange(files);
+  };
+
+  public onFileChange = (files: FileList | null) => {
     if (files) {
       const changeFiles = [];
       const { currentFiles } = this.state;
@@ -86,7 +99,13 @@ class ReactUploaderSkeleton extends React.Component<
 
     const isEmpty = currentFiles.length === 0;
     return (
-      <div className="rus" onClick={this.onUploaderClick}>
+      <div
+        className="rus"
+        onClick={this.onUploaderClick}
+        onDrop={this.onUploaderDrop}
+        onDragOver={e => e.preventDefault()}
+        // onDrop={this.onUploaderDrop}
+      >
         {isEmpty ? (
           children || <DefaultEmptyPreview />
         ) : (
@@ -125,7 +144,7 @@ class ReactUploaderSkeleton extends React.Component<
         <input
           className="rus-input"
           ref={this.fileInputRef}
-          onChange={this.onFileChange}
+          onChange={this.onInputChange}
           type="file"
           multiple={true}
         />
