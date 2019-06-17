@@ -1,17 +1,40 @@
 import { withA11y } from "@storybook/addon-a11y";
-import { action } from "@storybook/addon-actions";
 import { storiesOf, StoryDecorator } from "@storybook/react";
 import React from "react";
 
 import { ReactUploaderSkeleton } from "../src";
 
 const CenterDecorator: StoryDecorator = storyFn => (
-  <div style={{ margin: "40px auto", maxWidth: 800 }}>{storyFn()}</div>
+  <div style={{ margin: "40px auto", maxWidth: 400 }}>{storyFn()}</div>
 );
 
 storiesOf("Hello World", module)
   .addDecorator(withA11y)
   .addDecorator(CenterDecorator)
   .add("with text", () => (
-    <ReactUploaderSkeleton onClick={action("my-click")} anyText="meme" />
+    <ReactUploaderSkeleton
+      request={(fileData, onProgress, onError, onSuccess) => {
+        const xhr = new XMLHttpRequest();
+        xhr.upload.addEventListener("progress", e => {
+          const done = e.loaded;
+          const total = e.total;
+          const progress = done / total;
+          if (progress > 1) {
+            onProgress(1);
+          } else {
+            onProgress(done / total);
+          }
+        });
+        xhr.addEventListener("readystatechange", e => {
+          if (xhr.readyState === 4) {
+            onSuccess(xhr.response);
+          }
+        });
+
+        xhr.open("POST", "http://127.0.0.1:3000/file");
+        const formData = new FormData();
+        formData.append("file", fileData.fileData as File);
+        xhr.send(formData);
+      }}
+    />
   ));

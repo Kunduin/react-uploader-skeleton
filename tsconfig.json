@@ -22,7 +22,8 @@
     "noUnusedParameters": true,
     "allowSyntheticDefaultImports": true,
     "experimentalDecorators": true,
-    "emitDecoratorMetadata": true
+    "emitDecoratorMetadata": true,
+    "downlevelIteration": true
   },
   "include": ["src", "stories"],
   "exclude": ["node_modules", "build", "dist", "example", "rollup.config.ts"]
