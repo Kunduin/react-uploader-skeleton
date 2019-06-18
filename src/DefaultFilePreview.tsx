@@ -96,19 +96,18 @@ class DefaultFilePreview extends React.Component<IDefaultFilePreviewProps> {
             {uploaderFileData.state === FileState.ERROR && <Close />}
           </div>
 
-          {uploaderFileData.state !== FileState.RESOLVED &&
-            uploaderFileData.state !== FileState.ERROR && (
-              <div className="rus-preview_progress-bar-container">
-                <div
-                  style={{ transform: `scaleX(${progress})` }}
-                  className={
-                    state === FileState.ERROR
-                      ? "rus-preview_progress-bar--error"
-                      : "rus-preview_progress-bar"
-                  }
-                />
-              </div>
-            )}
+          {uploaderFileData.state !== FileState.RESOLVED && (
+            <div className="rus-preview_progress-bar-container">
+              <div
+                style={{ transform: `scaleX(${progress})` }}
+                className={
+                  state === FileState.ERROR
+                    ? "rus-preview_progress-bar--error"
+                    : "rus-preview_progress-bar"
+                }
+              />
+            </div>
+          )}
         </div>
         <div className="rus-preview_delete" onClick={onRemove}>
           <CloseCircle />

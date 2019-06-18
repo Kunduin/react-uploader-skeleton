@@ -6,6 +6,8 @@ import generatorFileName from "./utils/generatorFileName";
 
 export interface IReactUploaderSkeletonProps {
   parallelUploads: number;
+  onFileChange: (files: IUploaderFileData[]) => void;
+  onFinish: (files: IUploaderFileData[]) => void;
   request: (
     uploaderFileData: IUploaderFileData,
     onProgress: (percent: number) => void,
@@ -32,7 +34,8 @@ class ReactUploaderSkeleton extends React.Component<
   IReactUploaderSkeletonState
 > {
   public static defaultProps = {
-    parallelUploads: 5
+    parallelUploads: 5,
+    onFinish: () => null
   };
 
   public readonly state: IReactUploaderSkeletonState = {
@@ -81,6 +84,7 @@ class ReactUploaderSkeleton extends React.Component<
       const nextCurrentFiles = [...currentFiles, ...changeFiles];
 
       this.setState({ currentFiles: nextCurrentFiles });
+
       this.arrangeFileUpload();
     }
   };
@@ -92,7 +96,7 @@ class ReactUploaderSkeleton extends React.Component<
     for (const eachFile of currentFiles) {
       sumPercent += eachFile.progress || 0;
     }
-    sumPercent = currentFiles.length / sumPercent;
+    sumPercent = sumPercent / currentFiles.length;
     if (sumPercent > 1) {
       sumPercent = 1;
     }
@@ -126,14 +130,19 @@ class ReactUploaderSkeleton extends React.Component<
                   key={eachFile.name}
                   uploaderFileData={eachFile}
                   onRemove={() => {
-                    this.setState(preState => {
-                      const nextFiles = [...preState.currentFiles];
-                      const targetIndex = nextFiles.findIndex(
-                        value => value.name === eachFile.name
-                      );
-                      nextFiles.splice(targetIndex, 1);
-                      return { currentFiles: nextFiles };
-                    });
+                    this.setState(
+                      preState => {
+                        const nextFiles = [...preState.currentFiles];
+                        const targetIndex = nextFiles.findIndex(
+                          value => value.name === eachFile.name
+                        );
+                        nextFiles.splice(targetIndex, 1);
+                        return { currentFiles: nextFiles };
+                      },
+                      () => {
+                        this.fileChangeLifeCycle(this.state.currentFiles);
+                      }
+                    );
                   }}
                 />
               ))}
@@ -151,6 +160,26 @@ class ReactUploaderSkeleton extends React.Component<
       </div>
     );
   }
+
+  private fileChangeLifeCycle = (files: IUploaderFileData[]) => {
+    const { onFileChange, onFinish } = this.props;
+    onFileChange(files);
+
+    let isFinished = true;
+
+    for (const fileData of files) {
+      if (
+        fileData.state !== FileState.RESOLVED &&
+        fileData.state !== FileState.ERROR
+      ) {
+        isFinished = false;
+        break;
+      }
+    }
+    if (isFinished) {
+      onFinish(files);
+    }
+  };
 
   private arrangeFileUpload = () => {
     this.setState(({ currentFiles }) => {
@@ -207,6 +236,7 @@ class ReactUploaderSkeleton extends React.Component<
           }
         }
       }
+      this.fileChangeLifeCycle(currentFiles);
       return { currentFiles: [...currentFiles] };
     });
   };
