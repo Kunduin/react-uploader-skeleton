@@ -1,3 +1,4 @@
+/* tslint:disable */
 import { withA11y } from "@storybook/addon-a11y";
 import { storiesOf, StoryDecorator } from "@storybook/react";
 import React from "react";
@@ -13,6 +14,8 @@ storiesOf("Hello World", module)
   .addDecorator(CenterDecorator)
   .add("with text", () => (
     <ReactUploaderSkeleton
+      onFinish={e => console.log("onFinished", e)}
+      onFileChange={e => console.log("onFileChange", e)}
       request={(fileData, onProgress, onError, onSuccess) => {
         const xhr = new XMLHttpRequest();
         xhr.upload.addEventListener("progress", e => {
