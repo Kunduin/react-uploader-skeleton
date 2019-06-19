@@ -1,6 +1,6 @@
 # React Uploader Skeleton
 
-[![GitHub license](https://img.shields.io/badge/license-MIT-blue.svg)](https://github.com/kunduin/react-uploader-skeleton/blob/master/LICENSE) [![Travis (.com)](https://img.shields.io/travis/com/kunduin/react-uploader-skeleton.svg)](https://travis-ci.com/Kunduin/react-uploader-skeleton) [![npm](https://img.shields.io/npm/v/react-uploader-skeleton.svg)](https://www.npmjs.com/package/react-uploader-skeleton)
+[![GitHub license](https://img.shields.io/badge/license-MIT-blue.svg)](https://github.com/kunduin/react-uploader-skeleton/blob/master/LICENSE) [![Travis (.com)](https://img.shields.io/travis/com/kunduin/react-uploader-skeleton.svg)](https://travis-ci.com/Kunduin/react-uploader-skeleton) [![npm](https://img.shields.io/npm/v/react-uploader-skeleton.svg)](https://www.npmjs.com/package/react-uploader-skeleton) [![Greenkeeper badge](https://badges.greenkeeper.io/Kunduin/react-uploader-skeleton.svg)](https://greenkeeper.io/)
 
 A simple skeleton for building an awesome uploader component.
 
